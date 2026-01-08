@@ -2,8 +2,26 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ระบบอ่านหนังสือออนไลน์</title>
+    
+    <!-- PWA / Web App Manifest & Meta Tags Start -->
+    <!-- 1. ตั้งค่า Icon และ Theme Color สำหรับ Mobile -->
+    <meta name="theme-color" content="#4ade80">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="หนังสือออนไลน์">
+    
+    <!-- 2. ตั้งค่าสำหรับ iOS (Safari) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="หนังสือออนไลน์">
+    <link rel="apple-touch-icon" href="https://live.staticflickr.com/65535/54606972002_64bb13e1d2_w.jpg">
+
+    <!-- 3. Web App Manifest (Embedded Data URI) -->
+    <!-- กำหนดให้แอปเปิดแบบ Standalone (เต็มจอ), ใช้ไอคอนที่ระบุ, และชื่อแอป -->
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"หนังสือออนไลน์","short_name":"หนังสือออนไลน์","start_url":".","display":"standalone","background_color":"#e8f5e9","theme_color":"#4ade80","description":"ระบบอ่านหนังสือออนไลน์","icons":[{"src":"https://live.staticflickr.com/65535/54606972002_64bb13e1d2_w.jpg","sizes":"192x192","type":"image/jpeg"},{"src":"https://live.staticflickr.com/65535/54606972002_64bb13e1d2_w.jpg","sizes":"512x512","type":"image/jpeg"}]}'>
+    <!-- PWA End -->
+
     <!-- Tailwind CSS CDN for easy styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Sarabun font for Thai readability -->
@@ -14,6 +32,8 @@
         body {
             font-family: 'Sarabun', sans-serif;
             background-color: #e8f5e9; /* Light green background */
+            /* ป้องกันการเด้งของหน้าจอใน iOS */
+            overscroll-behavior-y: none;
         }
         /* Hidden by default, activated by JS */
         .page {
@@ -26,12 +46,14 @@
         }
         /* Styling for book covers on the home page */
         .book-cover {
-            height: 220px; /* Adjusted to match JS rendering */
-            background-size: cover;
+            /* ลบ fixed height ออก เพื่อให้ควบคุมผ่าน Tailwind หรือ inline style ได้ยืดหยุ่นขึ้น */
+            background-size: contain; /* เปลี่ยนเป็น contain เพื่อให้แสดงรูปเต็มไม่โดนตัด */
+            background-repeat: no-repeat;
             background-position: center;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: #f9fafb; /* เพิ่มสีพื้นหลังจางๆ กรณีรูปไม่เต็มกรอบ */
         }
         .book-cover:hover {
             transform: scale(1.05);
@@ -39,9 +61,10 @@
         }
         /* SweetAlert2 custom image styling */
         .swal2-book-cover {
-            width: 150px;
-            height: 220px;
-            object-fit: cover;
+            width: auto; /* ปรับเป็น auto เพื่อให้สัดส่วนถูกต้อง */
+            max-width: 100%;
+            max-height: 400px; /* จำกัดความสูงไม่ให้ล้นจอ */
+            object-fit: contain; /* แสดงรูปเต็ม */
             border: 3px solid black;
             border-radius: 8px;
             margin: 0 auto;
