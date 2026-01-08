@@ -18,7 +18,6 @@
     <link rel="apple-touch-icon" href="https://live.staticflickr.com/65535/54606972002_64bb13e1d2_w.jpg">
 
     <!-- 3. Web App Manifest (Embedded Data URI) -->
-    <!-- กำหนดให้แอปเปิดแบบ Standalone (เต็มจอ), ใช้ไอคอนที่ระบุ, และชื่อแอป -->
     <link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"หนังสือออนไลน์","short_name":"หนังสือออนไลน์","start_url":".","display":"standalone","background_color":"#e8f5e9","theme_color":"#4ade80","description":"ระบบอ่านหนังสือออนไลน์","icons":[{"src":"https://live.staticflickr.com/65535/54606972002_64bb13e1d2_w.jpg","sizes":"192x192","type":"image/jpeg"},{"src":"https://live.staticflickr.com/65535/54606972002_64bb13e1d2_w.jpg","sizes":"512x512","type":"image/jpeg"}]}'>
     <!-- PWA End -->
 
@@ -46,14 +45,13 @@
         }
         /* Styling for book covers on the home page */
         .book-cover {
-            /* ลบ fixed height ออก เพื่อให้ควบคุมผ่าน Tailwind หรือ inline style ได้ยืดหยุ่นขึ้น */
-            background-size: contain; /* เปลี่ยนเป็น contain เพื่อให้แสดงรูปเต็มไม่โดนตัด */
+            background-size: contain; 
             background-repeat: no-repeat;
             background-position: center;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            background-color: #f9fafb; /* เพิ่มสีพื้นหลังจางๆ กรณีรูปไม่เต็มกรอบ */
+            background-color: #f9fafb; 
         }
         .book-cover:hover {
             transform: scale(1.05);
@@ -61,10 +59,10 @@
         }
         /* SweetAlert2 custom image styling */
         .swal2-book-cover {
-            width: auto; /* ปรับเป็น auto เพื่อให้สัดส่วนถูกต้อง */
+            width: auto;
             max-width: 100%;
-            max-height: 400px; /* จำกัดความสูงไม่ให้ล้นจอ */
-            object-fit: contain; /* แสดงรูปเต็ม */
+            max-height: 400px;
+            object-fit: contain; 
             border: 3px solid black;
             border-radius: 8px;
             margin: 0 auto;
@@ -82,7 +80,6 @@
         #recommendedBooks {
             display: grid; /* Use grid for layout */
             gap: 1.5rem; /* Gap between grid items */
-            /* ใช้ auto-fill เพื่อให้คอลัมน์ถูกจองพื้นที่ไว้แม้ไม่มีเนื้อหา ทำให้ขนาดการ์ดไม่ยืดขยายจนเต็มจอ */
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
         }
         /* PWA Install Button Animation */
@@ -96,15 +93,13 @@
         }
     </style>
 </head>
-<!-- Added flex and flex-col to body to manage vertical layout -->
 <body class="min-h-screen flex flex-col">
     <!-- Header Section -->
     <header class="bg-gradient-to-r from-green-400 to-green-600 text-white shadow-lg sticky top-0 z-50">
-        <!-- เปลี่ยนจาก container mx-auto เป็น w-full เพื่อให้ขยายเต็มจอ และเพิ่ม padding ด้านข้าง -->
         <div class="w-full px-4 md:px-8 py-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <!-- Placeholder image for logo -->
+                    <!-- Logo -->
                     <img src="https://live.staticflickr.com/65535/54721899593_5d789ef073_w.jpg" alt="โลโก้" class="h-16 w-16 md:h-20 md:w-20 object-cover rounded-full border-2 border-white">
                     <div>
                         <h1 class="text-xl md:text-3xl font-bold">หนังสือออนไลน์</h1>
@@ -112,8 +107,8 @@
                     </div>
                 </div>
                 <div class="space-x-2 flex items-center">
-                    <!-- PWA Install Button (Hidden by default) -->
-                    <button id="installAppBtn" class="hidden bg-yellow-400 text-yellow-900 px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-yellow-300 transition shadow-sm font-bold text-sm md:text-base mr-2 install-pulse flex items-center">
+                    <!-- PWA Install Button (แสดงเสมอ แต่เปลี่ยนพฤติกรรมตามสถานะ) -->
+                    <button id="installAppBtn" class="bg-yellow-400 text-yellow-900 px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-yellow-300 transition shadow-sm font-bold text-sm md:text-base mr-2 install-pulse flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
@@ -127,28 +122,24 @@
 
     <!-- Home Page -->
     <div id="homePage" class="page active-page">
-        <!-- ลบ container เดิมออกเพื่อให้ Sidebar ชิดขอบ และใช้ flex layout แบบเต็มจอ -->
         <div class="flex flex-col md:flex-row min-h-screen items-stretch">
             
-            <!-- Sidebar (Left Column) -->
-            <!-- ปรับเป็น Sidebar เต็มความสูง สีพื้นหลังขาว ติดขอบซ้าย -->
+            <!-- Sidebar -->
             <aside class="w-full md:w-72 bg-white border-r border-gray-200 flex-shrink-0 z-40 relative">
-                <div class="sticky top-28 p-6"> <!-- sticky top-28 เพื่อหลบ Header -->
+                <div class="sticky top-28 p-6">
                     <div class="flex items-center mb-6 border-b pb-4 border-gray-100">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
                         </svg>
                         <h3 class="font-bold text-lg text-gray-800">หมวดหมู่หนังสือ</h3>
                     </div>
-                    <!-- Genre List Container -->
                     <div id="genreSidebar" class="flex flex-row md:flex-col overflow-x-auto md:overflow-visible gap-2 md:gap-1 pb-2 md:pb-0">
-                        <!-- Buttons will be injected here by JS -->
                         <p class="text-gray-500 text-sm">กำลังโหลด...</p>
                     </div>
                 </div>
             </aside>
 
-            <!-- Main Content (Right Column) -->
+            <!-- Main Content -->
             <main class="w-full flex-grow p-4 md:p-8 bg-[#e8f5e9]">
                 <div class="bg-white rounded-xl shadow-md p-6 mb-8 min-h-[500px]">
                     <div class="flex justify-between items-center mb-6 border-b pb-4 border-gray-100">
@@ -157,7 +148,6 @@
                     </div>
                     
                     <div id="recommendedBooks" class="grid gap-6">
-                        <!-- Book cards will be loaded here by JavaScript -->
                         <p class="text-center text-gray-500 col-span-full py-10" id="loadingMessage">กำลังโหลดหนังสือ...</p>
                     </div>
                 </div>
@@ -198,7 +188,6 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="booksList">
-                            <!-- Book list will be loaded here by JavaScript -->
                             <tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">กำลังโหลดหนังสือ...</td></tr>
                         </tbody>
                     </table>
@@ -213,7 +202,6 @@
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl md:text-2xl font-bold text-gray-800 truncate pr-4" id="bookTitle">ชื่อหนังสือ</h2>
-                    <!-- เปลี่ยนจาก showPage('booksPage') เป็น showPage('homePage') และเปลี่ยนข้อความปุ่มเป็น กลับหน้าหลัก -->
                     <button onclick="showPage('homePage')" class="shrink-0 bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 transition flex items-center text-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -253,10 +241,8 @@
     </footer>
 
     <script>
-        // *** ทดสอบการรัน JavaScript เบื้องต้น ***
         console.log("JavaScript เริ่มทำงานแล้ว!");
 
-        // *** สำคัญมาก: แทนที่ด้วย URL ของ Google Apps Script Web App ของคุณ ***
         const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8OHQXlFdvt-HbbZr2nARpPMePPoFdaHSnFQruCwK7NqMWpTXmHjnZpsvOoC5dyO_u/exec'; 
 
         // ---------------------------------------------
@@ -265,67 +251,84 @@
         let deferredPrompt;
         const installAppBtn = document.getElementById('installAppBtn');
 
-        // 1. ลงทะเบียน Service Worker (จำเป็นสำหรับ PWA)
+        // 1. ลงทะเบียน Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                // สร้าง Blob Service Worker แบบง่ายๆ เพื่อให้ผ่านกฎ PWA (โดยไม่ต้องมีไฟล์ sw.js แยก)
                 const swCode = `
                     self.addEventListener('install', (e) => {
-                        console.log('[SW] Install');
                         self.skipWaiting();
                     });
                     self.addEventListener('activate', (e) => {
-                        console.log('[SW] Activate');
                         return self.clients.claim();
                     });
                     self.addEventListener('fetch', (e) => {
-                        // Pass through requests
                         e.respondWith(fetch(e.request));
                     });
                 `;
                 const blob = new Blob([swCode], {type: 'application/javascript'});
                 const swUrl = URL.createObjectURL(blob);
-
-                navigator.serviceWorker.register(swUrl)
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    }, err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
+                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW failed: ', err));
             });
         }
 
-        // 2. จับ Event 'beforeinstallprompt' เพื่อแสดงปุ่มติดตั้ง
+        // 2. จับ Event ติดตั้ง (ถ้ามี)
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('พร้อมติดตั้งแอป!');
-            // ป้องกันไม่ให้ Chrome แสดงแถบติดตั้งอัตโนมัติแบบเก่า (เราจะคุมเอง)
+            console.log('Browser พร้อมติดตั้งแอปอัตโนมัติ');
             e.preventDefault();
-            // เก็บ event ไว้ใช้เมื่อผู้ใช้กดปุ่ม
             deferredPrompt = e;
-            // แสดงปุ่มติดตั้ง
-            installAppBtn.classList.remove('hidden');
+            // ถ้า Browser พร้อม ให้ปุ่มแสดงผล (ซึ่งจริงๆ เราแสดงตลอดอยู่แล้ว)
         });
 
-        // 3. เมื่อกดปุ่มติดตั้ง
+        // 3. จัดการคลิกปุ่มติดตั้ง
         installAppBtn.addEventListener('click', async () => {
-            if (!deferredPrompt) return;
-            // แสดง Prompt ของ Browser
-            deferredPrompt.prompt();
-            // รอผลลัพธ์
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`User response to the install prompt: ${outcome}`);
-            // เคลียร์ค่า
-            deferredPrompt = null;
-            installAppBtn.classList.add('hidden');
+            if (deferredPrompt) {
+                // กรณี Browser รองรับและพร้อมติดตั้ง
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response: ${outcome}`);
+                deferredPrompt = null;
+            } else {
+                // กรณี Browser ไม่รองรับ หรืออยู่ใน iframe/GAS (Manual Install)
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                
+                let titleText = 'วิธีติดตั้งแอป';
+                let htmlText = '';
+
+                if (isIOS) {
+                    htmlText = `
+                        <ol class="text-left text-sm space-y-2 p-2">
+                            <li>1. กดปุ่ม <strong>แชร์</strong> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Apple_Share_Icon.svg/24px-Apple_Share_Icon.svg.png" class="inline h-5"> ที่ด้านล่าง (หรือบน) ของจอ</li>
+                            <li>2. เลื่อนหาและเลือก <strong>"เพิ่มไปยังหน้าจอโฮม" (Add to Home Screen)</strong></li>
+                            <li>3. กด <strong>"เพิ่ม" (Add)</strong></li>
+                        </ol>
+                    `;
+                } else {
+                    // Android / Desktop Chrome
+                    htmlText = `
+                        <ol class="text-left text-sm space-y-2 p-2">
+                            <li>1. กดปุ่ม <strong>เมนู (จุด 3 จุด)</strong> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg> ที่มุมขวาบน</li>
+                            <li>2. เลือก <strong>"ติดตั้งแอป"</strong> หรือ <strong>"เพิ่มลงในหน้าจอหลัก"</strong></li>
+                            <li>3. กด <strong>"ติดตั้ง"</strong></li>
+                        </ol>
+                    `;
+                }
+
+                Swal.fire({
+                    title: titleText,
+                    html: htmlText,
+                    icon: 'info',
+                    confirmButtonText: 'เข้าใจแล้ว',
+                    confirmButtonColor: '#4ade80'
+                });
+            }
         });
 
         // ---------------------------------------------
         // App Logic
         // ---------------------------------------------
-        let allBooks = []; // เก็บข้อมูลหนังสือทั้งหมด
-        let currentGenre = 'ทั้งหมด'; // เก็บหมวดหมู่ที่เลือกปัจจุบัน
+        let allBooks = []; 
+        let currentGenre = 'ทั้งหมด'; 
 
-        // Function to update date and time
         function updateDateTime() {
             const now = new Date();
             const options = {
@@ -338,17 +341,15 @@
         setInterval(updateDateTime, 1000);
         updateDateTime(); 
 
-        // Function to show a specific page
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active-page'));
             const pageElement = document.getElementById(pageId);
             if (pageElement) {
                 pageElement.classList.add('active-page');
-                window.scrollTo(0, 0); // Scroll to top when changing page
+                window.scrollTo(0, 0); 
             }
 
             if (pageId === 'homePage') {
-                // If returning to home, reload with current genre
                 loadRecommendedBooks(currentGenre); 
             }
             if (pageId === 'booksPage') {
@@ -356,7 +357,6 @@
             }
         }
 
-        // --- Function to fetch books ---
         async function fetchBooks() {
             const loadingMessageHome = document.getElementById('loadingMessage');
             const loadingMessageList = document.querySelector('#booksList td[colspan="4"]');
@@ -378,7 +378,6 @@
                 allBooks = data;
                 console.log('Books fetched:', allBooks);
                 
-                // หลังจากโหลดข้อมูลเสร็จ ให้สร้าง Sidebar และแสดงหนังสือ
                 renderGenreSidebar();
                 showPage('homePage');
 
@@ -400,20 +399,16 @@
             }
         }
 
-        // --- Function to generate Sidebar Genres ---
         function renderGenreSidebar() {
             const sidebar = document.getElementById('genreSidebar');
             if (!sidebar) return;
-            sidebar.innerHTML = ''; // Clear loading text
+            sidebar.innerHTML = ''; 
 
-            // 1. Extract unique genres
             const genres = [...new Set(allBooks.map(book => book.genre || 'อื่นๆ'))];
-            genres.sort(); // Sort alphabetically
+            genres.sort(); 
             
-            // Add "All" option at the beginning
             genres.unshift('ทั้งหมด');
 
-            // 2. Create buttons
             genres.forEach(genre => {
                 const btn = document.createElement('button');
                 btn.textContent = genre;
@@ -425,7 +420,6 @@
                 
                 btn.onclick = () => {
                     currentGenre = genre;
-                    // Update active styling
                     Array.from(sidebar.children).forEach(child => {
                         child.className = 'text-left px-4 py-2 rounded-lg transition text-sm md:text-base whitespace-nowrap md:whitespace-normal w-auto md:w-full bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700';
                     });
@@ -438,24 +432,20 @@
             });
         }
 
-        // --- Update loadRecommendedBooks to accept filter ---
         function loadRecommendedBooks(genre = 'ทั้งหมด') {
             const container = document.getElementById('recommendedBooks');
             const titleElement = document.getElementById('categoryTitle');
             const badgeElement = document.getElementById('bookCountBadge');
             
-            container.innerHTML = ''; // Clear existing
+            container.innerHTML = ''; 
 
-            // Update Header Title
             titleElement.textContent = genre === 'ทั้งหมด' ? 'หนังสือทั้งหมด' : `หมวดหมู่: ${genre}`;
 
-            // Filter books
             let filteredBooks = allBooks;
             if (genre !== 'ทั้งหมด') {
                 filteredBooks = allBooks.filter(book => (book.genre || 'อื่นๆ') === genre);
             }
 
-            // Update Badge Count
             badgeElement.textContent = `${filteredBooks.length} เล่ม`;
 
             if (filteredBooks.length === 0) {
@@ -470,7 +460,6 @@
                 return;
             }
 
-            // Render books
             filteredBooks.forEach(book => {
                 const coverUrl = book.coverurl && book.coverurl.trim() ? book.coverurl : 'https://via.placeholder.com/150x220.png?text=ไม่มีปก';
                 const div = document.createElement('div');
@@ -498,7 +487,6 @@
             });
         }
 
-        // Shows a SweetAlert popup with the book cover
         function showBookCover(book) {
             const coverUrl = book.coverurl && book.coverurl.trim() ? book.coverurl : 'https://via.placeholder.com/150x220.png?text=ไม่มีปก';
             Swal.fire({
@@ -513,7 +501,6 @@
             });
         }
 
-        // Renders the list of books in a table
         function renderBooksList(tableId, searchInputId) {
             const booksList = document.getElementById(tableId);
             booksList.innerHTML = ''; 
@@ -582,7 +569,6 @@
             }
         }
 
-        // Function to display the selected book
         function readBook(bookId) {
             const book = allBooks.find(b => b.id === bookId);
             if (book) {
