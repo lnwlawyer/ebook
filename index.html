@@ -85,6 +85,15 @@
             /* ใช้ auto-fill เพื่อให้คอลัมน์ถูกจองพื้นที่ไว้แม้ไม่มีเนื้อหา ทำให้ขนาดการ์ดไม่ยืดขยายจนเต็มจอ */
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
         }
+        /* PWA Install Button Animation */
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+        }
+        .install-pulse {
+            animation: pulse-green 2s infinite;
+        }
     </style>
 </head>
 <!-- Added flex and flex-col to body to manage vertical layout -->
@@ -102,7 +111,14 @@
                         <p id="dateTime" class="text-xs md:text-sm text-green-100"></p>
                     </div>
                 </div>
-                <div class="space-x-2">
+                <div class="space-x-2 flex items-center">
+                    <!-- PWA Install Button (Hidden by default) -->
+                    <button id="installAppBtn" class="hidden bg-yellow-400 text-yellow-900 px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-yellow-300 transition shadow-sm font-bold text-sm md:text-base mr-2 install-pulse flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        ติดตั้งแอป
+                    </button>
                     <button onclick="showPage('booksPage')" class="bg-white text-green-700 px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-gray-100 transition shadow-sm font-semibold text-sm md:text-base">ค้นหาหนังสือ</button>
                 </div>
             </div>
@@ -243,6 +259,69 @@
         // *** สำคัญมาก: แทนที่ด้วย URL ของ Google Apps Script Web App ของคุณ ***
         const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8OHQXlFdvt-HbbZr2nARpPMePPoFdaHSnFQruCwK7NqMWpTXmHjnZpsvOoC5dyO_u/exec'; 
 
+        // ---------------------------------------------
+        // PWA & Service Worker Logic
+        // ---------------------------------------------
+        let deferredPrompt;
+        const installAppBtn = document.getElementById('installAppBtn');
+
+        // 1. ลงทะเบียน Service Worker (จำเป็นสำหรับ PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // สร้าง Blob Service Worker แบบง่ายๆ เพื่อให้ผ่านกฎ PWA (โดยไม่ต้องมีไฟล์ sw.js แยก)
+                const swCode = `
+                    self.addEventListener('install', (e) => {
+                        console.log('[SW] Install');
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (e) => {
+                        console.log('[SW] Activate');
+                        return self.clients.claim();
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        // Pass through requests
+                        e.respondWith(fetch(e.request));
+                    });
+                `;
+                const blob = new Blob([swCode], {type: 'application/javascript'});
+                const swUrl = URL.createObjectURL(blob);
+
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+        // 2. จับ Event 'beforeinstallprompt' เพื่อแสดงปุ่มติดตั้ง
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('พร้อมติดตั้งแอป!');
+            // ป้องกันไม่ให้ Chrome แสดงแถบติดตั้งอัตโนมัติแบบเก่า (เราจะคุมเอง)
+            e.preventDefault();
+            // เก็บ event ไว้ใช้เมื่อผู้ใช้กดปุ่ม
+            deferredPrompt = e;
+            // แสดงปุ่มติดตั้ง
+            installAppBtn.classList.remove('hidden');
+        });
+
+        // 3. เมื่อกดปุ่มติดตั้ง
+        installAppBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            // แสดง Prompt ของ Browser
+            deferredPrompt.prompt();
+            // รอผลลัพธ์
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            // เคลียร์ค่า
+            deferredPrompt = null;
+            installAppBtn.classList.add('hidden');
+        });
+
+        // ---------------------------------------------
+        // App Logic
+        // ---------------------------------------------
         let allBooks = []; // เก็บข้อมูลหนังสือทั้งหมด
         let currentGenre = 'ทั้งหมด'; // เก็บหมวดหมู่ที่เลือกปัจจุบัน
 
