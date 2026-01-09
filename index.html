@@ -258,8 +258,9 @@
             transform-style: preserve-3d;
         }
 
+        /* IMPORTANT: Position must be absolute to stack pages */
         .paper {
-            position: absolute;
+            position: absolute !important;
             width: 100%;
             height: 100%;
             top: 0;
@@ -335,28 +336,31 @@
 
         /* Controls (Fixed/Floating) */
         .controls {
-            position: absolute;
-            bottom: 20px; /* ลอยอยู่ด้านล่างเสมอ */
+            position: fixed; /* เปลี่ยนเป็น fixed เพื่อให้ลอยเหนือทุกอย่างและอิงกับหน้าจอ */
+            bottom: max(20px, env(safe-area-inset-bottom)); /* เว้นระยะขอบล่างเผื่อ iPhone รุ่นใหม่ */
             left: 0;
             width: 100%;
             display: flex;
             justify-content: center;
             gap: 12px;
-            z-index: 1000; /* อยู่เหนือทุกอย่าง */
+            z-index: 9999; /* เพิ่ม Z-Index ให้สูงที่สุด */
             pointer-events: none; /* กล่องแม่ไม่ขวางการกดพื้นที่ว่าง */
             padding: 0 10px;
-            /* ป้องกันการกระพริบ */
-            transform: translateZ(0);
+            /* เทคนิคป้องกันการกระพริบบน iOS */
+            transform: translateZ(0); 
             -webkit-transform: translateZ(0);
+            backface-visibility: hidden;
         }
         
         .controls > * {
             pointer-events: auto; /* ปุ่มกดได้ปกติ */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* เงาชัดขึ้น */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* เงาเข้มขึ้นเล็กน้อยเพื่อให้เห็นชัดบนพื้นหลังขาว */
+            position: relative; /* เพื่อให้แน่ใจว่า z-index ทำงาน */
+            z-index: 10000;
         }
         
         .btn {
-            background: white;
+            background: white; /* พื้นหลังสีขาวต้องชัดเจน */
             border: 1px solid #d1d5db;
             padding: 8px 16px;
             border-radius: 99px;
@@ -367,83 +371,112 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            height: 44px; /* สูงขึ้นเล็กน้อยเพื่อง่ายต่อการกด */
+            height: 44px;
             font-size: 0.95rem;
+            /* ป้องกันปุ่มยุบตัวจนมองไม่เห็น */
+            flex-shrink: 0; 
+            min-width: 44px; 
+            justify-content: center;
         }
+
+        /* แก้ไขวงเล็บปิดที่หายไป */
         .btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             color: #2c3e50;
             border-color: #2c3e50;
         }
+
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             background: #f3f4f6;
             transform: none;
         }
+        
+        /* แก้ไขสีในโหมดมืดให้ชัดเจนขึ้น */
+        body.dark-mode .btn {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6; /* สีไอคอนสว่างขึ้น */
+        }
 
-        /* ---- LIBRARY VIEW STYLES ---- */
+        /* ---- LIBRARY VIEW STYLES (GRID LAYOUT) ---- */
         .library-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* ขยายขนาดการ์ดเล็กน้อยให้อ่านง่ายขึ้น */
             gap: 2rem;
             width: 100%;
-            max-width: 900px;
-            padding: 1rem;
+            max-width: 1200px;
+            padding: 2rem;
+            margin: 0 auto;
         }
 
         .book-card {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* แนวตั้ง: รูปบน ข้อมูลล่าง */
+            height: 100%;
+            position: relative;
         }
 
         .book-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         .book-cover {
             width: 100%;
-            aspect-ratio: 2/3;
+            aspect-ratio: 2/3; /* อัตราส่วนมาตรฐานหนังสือ */
             background-color: #eee;
             object-fit: cover;
         }
 
         .book-info {
-            padding: 12px;
+            padding: 1rem;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
         }
 
         .book-title {
-            font-weight: bold;
-            font-size: 0.95rem;
+            font-weight: 600;
+            font-size: 1rem;
             color: #1f2937;
-            margin-bottom: 4px;
-            line-height: 1.3;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            /* ตัดคำถ้าชื่อยาวเกิน 2 บรรทัด */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .book-author {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #6b7280;
-            margin-bottom: auto;
+            margin-bottom: 0.5rem;
         }
 
         .book-meta {
-            margin-top: 8px;
+            margin-top: auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 0.75rem;
             color: #9ca3af;
+            border-top: 1px solid #f3f4f6;
+            padding-top: 0.5rem;
+        }
+        
+        body.dark-mode .book-meta {
+            border-top-color: #374151;
         }
 
         .view-count {
@@ -480,6 +513,12 @@
                 --book-width: 70vw; 
                 --book-height: 70vh; /* ลดความสูงลงเพื่อให้มีที่สำหรับ controls */
             }
+            
+            .library-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
         }
 
         /* Mobile (Max width 768px) */
@@ -508,10 +547,15 @@
             .btn { padding: 8px 12px; }
             .app-header { padding: 0 1rem; }
             
-            /* ปรับ Grid รายการหนังสือ */
+            /* ปรับ Grid สำหรับมือถือ */
             .library-grid { 
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* เล็กลงเพื่อให้แสดงได้ 2-3 คอลัมน์ */
                 gap: 1rem; 
+                padding: 1rem;
+            }
+            
+            .book-info {
+                padding: 0.75rem;
             }
             
             .controls {
@@ -1150,7 +1194,9 @@
                 const pageBackNum = (i * 2) + 2;
 
                 const paper = document.createElement('div');
-                paper.className = `paper z-[${totalPapers - i}]`;
+                // Use manual class instead of template literal to avoid escaping issues
+                paper.className = 'paper';
+                paper.style.zIndex = totalPapers - i; // Correct stacking
                 paper.id = `p${paperIndex}`;
                 
                 const frontDiv = document.createElement('div');
@@ -1257,7 +1303,8 @@
             for(let i=0; i<totalPapers; i++) {
                 const paperIndex = i+1;
                 const paper = document.createElement('div');
-                paper.className = `paper z-[${totalPapers - i}]`;
+                paper.className = 'paper';
+                paper.style.zIndex = totalPapers - i;
                 paper.id = `p${paperIndex}`;
                 
                 const frontDiv = document.createElement('div');
