@@ -198,12 +198,13 @@
             justify-content: center; /* Default center for book */
             overflow: hidden; /* ซ่อน Scrollbar ของ Browser เพื่อใช้ Pan แทน */
             position: relative;
-            padding: 20px;
+            padding: 0; /* Remove padding to handle absolute positioning better */
             transition: padding 0.3s;
         }
         
         /* Adjust work-area when list view is active */
         .work-area.list-mode {
+            padding: 20px;
             justify-content: flex-start; /* Top align for grid */
             align-items: stretch;
             overflow-y: auto; /* Allow scroll in library mode */
@@ -235,6 +236,7 @@
             justify-content: center;
             touch-action: none;
             transform-origin: center center;
+            padding-bottom: 60px; /* Space for controls */
         }
 
         .book-stage {
@@ -284,6 +286,8 @@
             border: 1px solid #d1d5db;
             display: flex;
             flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .back {
@@ -298,6 +302,10 @@
             border: 1px solid #d1d5db;
             border-right: 4px solid rgba(0,0,0,0.05);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .flipped {
@@ -316,18 +324,35 @@
             height: 100%;
             object-fit: contain; /* ให้ภาพ PDF พอดีกับกรอบโดยสัดส่วนไม่เพี้ยน */
         }
+        
+        /* Loading Text inside Pages */
+        .page-loading-text {
+            position: absolute;
+            color: #ccc;
+            font-size: 0.8rem;
+            z-index: -1;
+        }
 
-        /* Controls */
+        /* Controls (Fixed/Floating) */
         .controls {
-            margin-top: 1rem;
-            display: flex;
-            gap: 12px;
-            z-index: 50;
-            flex-wrap: wrap;
-            justify-content: center;
+            position: absolute;
+            bottom: 20px; /* ลอยอยู่ด้านล่างเสมอ */
+            left: 0;
             width: 100%;
-            /* ทำให้ Controls อยู่เหนือเลเยอร์ Zoom เพื่อให้กดได้เสมอ */
-            position: relative; 
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            z-index: 1000; /* อยู่เหนือทุกอย่าง */
+            pointer-events: none; /* กล่องแม่ไม่ขวางการกดพื้นที่ว่าง */
+            padding: 0 10px;
+            /* ป้องกันการกระพริบ */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+        
+        .controls > * {
+            pointer-events: auto; /* ปุ่มกดได้ปกติ */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* เงาชัดขึ้น */
         }
         
         .btn {
@@ -338,24 +363,24 @@
             font-family: 'Sarabun', sans-serif;
             font-weight: 600;
             color: #4b5563;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 8px;
-            height: 40px;
-            font-size: 0.9rem;
+            height: 44px; /* สูงขึ้นเล็กน้อยเพื่อง่ายต่อการกด */
+            font-size: 0.95rem;
         }
         .btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
             color: #2c3e50;
             border-color: #2c3e50;
         }
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
             background: #f3f4f6;
+            transform: none;
         }
 
         /* ---- LIBRARY VIEW STYLES ---- */
@@ -453,7 +478,7 @@
             :root {
                 /* ขยายขนาดหนังสือบนแท็บเล็ต */
                 --book-width: 70vw; 
-                --book-height: 75vh;
+                --book-height: 70vh; /* ลดความสูงลงเพื่อให้มีที่สำหรับ controls */
             }
         }
 
@@ -462,11 +487,11 @@
             :root {
                 /* เต็มจอสำหรับมือถือ */
                 --book-width: 90vw;
-                --book-height: 75vh;
+                --book-height: 70vh; /* เผื่อที่ด้านล่าง */
             }
             
-            .work-area {
-                padding: 10px; /* ลด Padding */
+            .work-area.list-mode {
+                padding: 10px;
             }
 
             .sidebar {
@@ -487,6 +512,11 @@
             .library-grid { 
                 grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
                 gap: 1rem; 
+            }
+            
+            .controls {
+                bottom: 15px; /* ขยับขึ้นมาหน่อยบนมือถือ */
+                gap: 8px;
             }
         }
         
@@ -651,7 +681,7 @@
                         </div>
                     </div>
 
-                    <!-- Controls -->
+                    <!-- Controls (Floating at bottom) -->
                     <div class="controls">
                         <button id="firstBtn" class="btn text-gray-500" disabled><i class="fas fa-angle-double-left"></i> <span class="text-label ml-1">แรก</span></button>
                         <button id="prevBtn" class="btn" disabled><i class="fas fa-chevron-left text-sm"></i> <span class="text-label ml-1">ก่อนหน้า</span></button>
@@ -971,7 +1001,7 @@
             });
         }
 
-        // --- 6. PDF HANDLING ---
+        // --- 6. PDF HANDLING (Optimized) ---
         
         function processPdfUrl(url) {
             if (url.includes('dropbox.com')) {
@@ -1104,10 +1134,15 @@
         
         async function renderPdfFlipbook(pdfDoc) {
              currentPdfDoc = pdfDoc;
-             pdfLoaderText.innerText = "กำลังสร้างหน้าหนังสือ...";
+             pdfLoaderText.innerText = "กำลังเตรียมโครงสร้างหนังสือ...";
              
              const pdfPages = currentPdfDoc.numPages;
              totalPapers = Math.ceil(pdfPages / 2); 
+             
+             // Clear existing
+             bookElement.innerHTML = '';
+             papers = [];
+             const renderTasks = [];
 
              for (let i = 0; i < totalPapers; i++) {
                 const paperIndex = i + 1;
@@ -1123,32 +1158,46 @@
                 const frontCanvas = document.createElement('canvas');
                 frontDiv.appendChild(frontCanvas);
                 
+                // Placeholder text for front
+                const frontLoading = document.createElement('div');
+                frontLoading.className = 'page-loading-text';
+                frontLoading.innerText = `หน้า ${pageFrontNum}`;
+                frontDiv.appendChild(frontLoading);
+                
                 const backDiv = document.createElement('div');
                 backDiv.className = 'back';
                 const backCanvas = document.createElement('canvas');
                 backDiv.appendChild(backCanvas);
+                
+                // Placeholder text for back
+                const backLoading = document.createElement('div');
+                backLoading.className = 'page-loading-text';
+                backLoading.innerText = `หน้า ${pageBackNum}`;
+                backDiv.appendChild(backLoading);
 
                 paper.appendChild(frontDiv);
                 paper.appendChild(backDiv);
                 bookElement.appendChild(paper);
                 papers.push(paper);
 
+                // Queue tasks instead of await
                 if (pageFrontNum <= pdfPages) {
-                    await renderPageToCanvas(currentPdfDoc, pageFrontNum, frontCanvas);
+                    renderTasks.push({ pdfDoc, pageNum: pageFrontNum, canvas: frontCanvas, isPriority: i < 2 });
                 } else {
                     drawEmptyPage(frontCanvas, "End of Book");
                 }
 
                 if (pageBackNum <= pdfPages) {
-                    await renderPageToCanvas(currentPdfDoc, pageBackNum, backCanvas);
+                    renderTasks.push({ pdfDoc, pageNum: pageBackNum, canvas: backCanvas, isPriority: i < 2 });
                 } else {
                     drawEmptyPage(backCanvas, "");
                 }
              }
              
+             // Attach Click Handlers
              papers.forEach((paper, index) => {
                 paper.addEventListener('click', (e) => {
-                    if (zoomLevel > 1.1) return; // Disable tap-to-turn when zoomed in
+                    if (zoomLevel > 1.1) return;
 
                     if (currentPage === index + 1) {
                         const rect = paper.getBoundingClientRect();
@@ -1159,8 +1208,31 @@
                 });
              });
 
+             // Render Priority Pages (First 2 papers / 4 pages) immediately
+             pdfLoaderText.innerText = "กำลังแสดงผลหน้าแรก...";
+             const priorityTasks = renderTasks.filter(t => t.isPriority);
+             const backgroundTasks = renderTasks.filter(t => !t.isPriority);
+             
+             // Process priority tasks
+             await Promise.all(priorityTasks.map(t => renderPageToCanvas(t.pdfDoc, t.pageNum, t.canvas)));
+
+             // Hide loader and show book
              pdfLoader.classList.add('hidden');
              goFirst();
+             
+             // Process rest in background
+             processBackgroundTasks(backgroundTasks);
+        }
+        
+        async function processBackgroundTasks(tasks) {
+            for (const task of tasks) {
+                // Check if page is already rendered or element removed
+                if(!document.body.contains(task.canvas)) continue;
+                
+                // Small delay to yield to UI thread
+                await new Promise(resolve => setTimeout(resolve, 10)); 
+                await renderPageToCanvas(task.pdfDoc, task.pageNum, task.canvas);
+            }
         }
         
         function drawEmptyPage(canvas, text) {
@@ -1228,9 +1300,13 @@
 
         async function renderPageToCanvas(pdfDoc, pageNum, canvas) {
             try {
+                // If canvas already has content (width/height set > default), skip
+                if(canvas.width > 300) return; // Simple check if already rendered
+
                 const page = await pdfDoc.getPage(pageNum);
                 const viewport = page.getViewport({ scale: 1.5 });
                 const context = canvas.getContext('2d');
+                
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
